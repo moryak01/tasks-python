@@ -6,6 +6,7 @@ def is_square(k):
 
 
 count = 0
+
 for i in range(10):
     if is_square(int(input())):
         count += 1
