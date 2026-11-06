@@ -1,0 +1,177 @@
+# ================================================
+# ИГРА «ПОДЗЕМЕЛЬЕ: ДРЕВНИЕ ШАХТЫ»
+# Запас сил = здоровье // 10 + выносливость.
+# Критический удар — каждый третий (номер удара делится на 3).
+# ================================================
+
+# --- Заголовок ------------------------------------
+title = "ПОДЗЕМЕЛЬЕ: ЗАБРОШЕННЫЕ ШАХТЫ"
+frame = "=" * 31
+
+print(frame)
+print(" " + title + " ")
+print(frame)
+print()
+
+# --- Знакомство с героем --------------------------
+print("Как зовут героя?")
+hero_name = input()
+print(f"Приветствую, {hero_name}!")
+print("Ты попадаешь в древние шахты. Пахнет сыростью и углём.")
+print()
+
+# --- Настройка героя -------------------------------
+print("Настройка героя.")
+print("Здоровье, сила, ловкость, выносливость — по одному числу в строке:")
+while True:
+    try:
+        health = int(input())
+        strength = int(input())
+        agility = int(input())
+        endurance = int(input())
+        if health <= 0:
+            raise ValueError(f"Здоровье должно быть положительным, а введено {health}")
+        if strength < 0 or agility < 0 or endurance < 0:
+            raise ValueError("Характеристики не могут быть отрицательными")
+        if strength > 50:
+            raise ValueError(f"Сила не может быть больше 50, а введено {strength}")
+        break
+    except ValueError as e:
+        if str(e).startswith("invalid literal"):
+            print("Ой: одна из строк не число. Введите все четыре снова:")
+        else:
+            print(f"{e}. Введите все четыре снова:")
+print()
+
+# --- Расчёт урона ----------------------------------
+base_attack = 10
+damage = base_attack + strength * 1.5
+crit_damage = damage * 2
+stamina = health // 10 + endurance
+
+# --- Формуляр героя --------------------------------
+print("Характеристики героя:")
+print(f"Здоровье: {health}")
+print(f"Сила: {strength}")
+print(f"Ловкость: {agility}")
+print(f"Выносливость: {endurance}")
+print()
+print(f"Урон героя: {damage:.1f}")
+print(f"Критический урон: {crit_damage:.1f}")
+print(f"Запас сил: {stamina}")
+print()
+
+# --- Главный цикл игры -----------------------------
+running = True
+actions = 0
+menu_last = 6
+outcome = "прерывание"
+try:
+    while running:
+        print("Что делаешь?")
+        print("1 - осмотреться")
+        print("2 - идти вперёд")
+        print("3 - отдохнуть")
+        print("4 - прислушаться")
+        print("5 - зажечь факел")
+        print("6 - тренировка")
+        print("0 - выйти из шахт")
+
+        while True:
+            choice = input()
+            try:
+                menu_number = int(choice)
+            except ValueError:
+                print("Такого пункта нет. Введи номер пункта из меню.")
+                continue
+            if 0 <= menu_number <= menu_last:
+                choice = str(menu_number)
+                break
+            print("Такого пункта нет. Введи номер пункта из меню.")
+        print()
+
+        match choice:
+            case "1":
+                print("Вы осматриваетесь. Гнилые подпорки держат низкий свод, на рельсах лежит перевёрнутая вагонетка.")
+
+            case "2":
+                cost = 2
+                if stamina >= cost:
+                    stamina -= cost
+                    print("Вы пробираетесь по штольне. Под ногами хрустит угольная крошка.")
+                else:
+                    health -= cost - stamina
+                    stamina = 0
+                    print("Силы на исходе — вы бредёте по штольне, держась за мокрую стену.")
+
+            case "3":
+                stamina += 3
+                print("Вы садитесь на пустой ящик из-под динамита и переводите дух. Силы возвращаются.")
+
+            case "4":
+                print("Вы замираете и прислушиваетесь. Где-то в глубине скрипят старые балки, и снова тишина.")
+
+            case "5":
+                stamina -= 1
+                if stamina < 0:
+                    stamina = 0
+                print("Вы зажигаете факел. На стенах вспыхивают прожилки руды.")
+
+            case "6":
+                strikes = 6 
+                training_cost = 3
+                total_damage = 0
+                crit_count = 0
+                print("Вы находите мешок с песком, подвешенный к балке.")
+                print("Похоже, на нём шахтёры когда-то отрабатывали удары киркой.")
+                print()
+                print(f"Наносите {strikes} ударов.")
+                for i in range(1, strikes + 1):
+                    is_crit = i % 3 == 0
+                    if is_crit:
+                        hit_damage = crit_damage
+                        print(f"Удар {i}: {hit_damage:.1f} — критический!")
+                        crit_count += 1
+                    else:
+                        hit_damage = damage
+                        print(f"Удар {i}: {hit_damage:.1f}")
+                    total_damage += hit_damage
+                average_damage = total_damage / strikes
+                print()
+                print(f"Итог: {strikes} ударов, критических ударов: {crit_count}")
+                print(f"Общий урон: {total_damage:.1f}")
+                print(f"Средний урон: {average_damage:.1f}")
+                stamina -= training_cost
+                if stamina < 0:
+                    stamina = 0
+
+            case "0":
+                print("Клеть со скрипом поднимает вас на поверхность. Шахты остаются позади.")
+                outcome = "выход"
+                running = False
+
+            case _:
+                print("Такого действия нет.")
+
+        if running:
+            actions += 1
+            print()
+            print(f"Здоровье: {health} Запас сил: {stamina}")
+
+        if health <= 0:
+            print(f"{hero_name} падает без сил. Шахты забирают ещё одного искателя.")
+            outcome = "смерть"
+            running = False
+except KeyboardInterrupt:
+    print()
+    print("Игрок прервал сеанс.")
+finally:
+    print()
+    print(frame)
+    if outcome == "смерть":
+        print(f"Ты не выбрался, {hero_name}. Действий совершено: {actions}.")
+    elif outcome == "выход":
+        print(f"Смена окончена, {hero_name}. Действий совершено: {actions}.")
+    else:
+        print(f"Сеанс прерван, {hero_name}. Действий совершено: {actions}.")
+    print(frame)
